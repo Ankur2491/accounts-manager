@@ -128,6 +128,7 @@ export default function Report() {
         let gData = [];
         let labelArr = [];
         let conKeys = Object.keys(consolidatedExpense);
+        conKeys.sort((a,b)=> new Date(a).getTime()-new Date(b).getTime());
         for (let key of conKeys) {
             if (key.includes(evt)) {
                 labelArr.push(key)
@@ -146,9 +147,11 @@ export default function Report() {
         let tData = [];
         for(let expObj of allExpense) {
             if(expObj["expenseDate"].includes(evt)) {
+                expObj['expenseAmount'] = parseFloat(expObj['expenseAmount'])
                 tData.push(expObj);
             }
         }
+        tData.sort((a,b)=>new Date(b.expenseDate).getTime()-new Date(a.expenseDate).getTime())
         setTableData([...tData]);
         setShowGraph(false)
         setShowTable(true)   

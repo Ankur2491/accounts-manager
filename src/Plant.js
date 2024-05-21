@@ -54,7 +54,7 @@ function Plant() {
 
                 </Row>
             </Container>
-            { open == true &&
+            { open === true &&
             <div>
                 <Snackbar open={open} autoHideDuration={3000} anchorOrigin={{vertical:'bottom', horizontal: 'center'}}>
                     <Alert
