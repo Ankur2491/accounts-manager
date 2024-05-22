@@ -22,22 +22,31 @@ export default function Report() {
     const [showTable, setShowTable] = useState(false);
     const [tableData, setTableData] = useState([]);
     const [allExpense, setAllExpense] = useState([]);
+    const [plantBalance, setPlantBalance] = useState(null);
     const tableColumns = [
         {
-            name: 'Expense Date',
+            name: 'Date',
             selector: row => row.expenseDate,
             sortable: true,
         },
         {
-            name: 'Expense Name',
+            name: 'Comments',
             selector: row => row.expenseName,
             sortable: true,
         },
         {
-            name: 'Expense Amount',
+            name: 'Type',
+            selector: row => row.expenseType
+        },
+        {
+            name: 'Amount',
             selector: row => row.expenseAmount,
             sortable: true,
         },
+        {
+            name: 'Balance',
+            selector: row => row.balance
+        }
     ];
     useEffect(() => {
         async function getAllCat() {
@@ -88,12 +97,17 @@ export default function Report() {
                     <div>
                         <br/>
                         <h5>Showing data for {selectedReport}:</h5>
+                        <h6>Plant Balance: {plantBalance}</h6>
                         <hr />
+                        <Row>
+                            <Col>
                         <DataTable
                             columns={tableColumns}
                             data={tableData}
                             pagination
                         />
+                        </Col>
+                        </Row>
                         </div>
                 }
             </Container>
@@ -102,7 +116,10 @@ export default function Report() {
     async function changeCategory(evt) {
         setSelectedCategory(evt)
         let res = await axios.get(`https://accounts-manager-api.vercel.app/getExpDetails/${evt}`)
-        let expenseArr = res.data;
+        let expenseArr = res.data.records;
+        if(evt === "plant") {
+            setPlantBalance(res.data.plantBalance)
+        }
         setAllExpense(expenseArr);
         let consolidatedObject = {};
         for (let expObj of expenseArr) {
