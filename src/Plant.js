@@ -21,12 +21,20 @@ function Plant() {
     const [expenseName, setExpenseName] = useState('');
     const [expenseAmount, setExpenseAmount] = useState('');
     const [expenseDate, setExpenseDate] = useState(new Date());
+    const [expTransId, setExpTransId] = useState(null);
     const [open, setOpen] = React.useState(false);
     const [detailType, setDetailType] = useState("debit")
     useEffect(() => {
+        async function getExpense() {
+        let res = await axios.get(`https://accounts-manager-api.vercel.app/getExpDetails/plant`)
+        let expenseArr = res.data.records;
+        let expObj = expenseArr[expenseArr.length-1];
+        setExpTransId(expObj['expTransId']+1);
+        }
+        getExpense();
         setExpenseName('');
         setExpenseAmount('');
-    }, [])
+    }, [open])
     return (
         <div>
             <Container fluid>
@@ -104,13 +112,13 @@ function Plant() {
                 "expenseType": detailType,
                 "expenseName": expenseName,
                 "expenseAmount": expenseAmount,
-                "expenseDate": moment(expenseDate).format('DD-MMM-yyyy')
+                "expenseDate": moment(expenseDate).format('DD-MMM-yyyy'),
+                "expTransId": expTransId
             }
-            console.log(expenseBody);
-            let res = await axios.post(`https://accounts-manager-api.vercel.app/addExpense`, expenseBody).catch(err => console.log(err));
+            await axios.post(`https://accounts-manager-api.vercel.app/addExpense`, expenseBody).catch(err => console.log(err));
             setOpen(true)
             setTimeout(() => setOpen(false), 3000);
-            console.log(res)
+            setExpTransId(expTransId+1);
         }
     }
 }

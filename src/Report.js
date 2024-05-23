@@ -216,7 +216,7 @@ export default function Report() {
                 tData.push(expObj);
             }
         }
-        tData.sort((a, b) => new Date(b.expenseDate).getTime() - new Date(a.expenseDate).getTime())
+        tData.sort((a, b) => b.expTransId-a.expTransId)
         setTableData([...tData]);
         setShowGraph(false)
         setShowTable(true)
