@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { BarChart } from '@mui/x-charts/BarChart';
-import { Container } from 'react-bootstrap';
+import { Container, Button } from 'react-bootstrap';
 import Row from 'react-bootstrap/Row';
 import { useEffect, useState } from 'react';
 import Col from 'react-bootstrap/Col';
@@ -16,13 +16,16 @@ export default function Report() {
     const [categories, setCategories] = useState([]);
     const [monthList, setMonthList] = useState([]);
     const [consolidatedExpense, setConsolidatedExpense] = useState(null);
+    const [consolidatedCredit, setConsolidatedCredit] = useState(null);
     const [graphData, setGraphData] = useState([]);
+    const [crdData, setCrdData] = useState([]);
     const [xLabel, setXlabel] = useState([]);
     const [showGraph, setShowGraph] = useState(false);
     const [showTable, setShowTable] = useState(false);
     const [tableData, setTableData] = useState([]);
     const [allExpense, setAllExpense] = useState([]);
     const [plantBalance, setPlantBalance] = useState(null);
+    const Export = ({ onExport }) => <Button onClick={e => onExport(e.target.value)}>Export</Button>;
     const tableColumns = [
         {
             name: 'Date',
@@ -48,6 +51,33 @@ export default function Report() {
             selector: row => row.balance
         }
     ];
+
+
+    const conditionalRowStyles = [
+        {
+            when: row => row.expenseType === 'credit',
+            style: {
+                backgroundColor: '#1CAC78',
+                color: 'white',
+                fontWeight: 'bold',
+                '&:hover': {
+                    cursor: 'pointer',
+                },
+            },
+        },
+        {
+            when: row => row.expenseType === 'debit',
+            style: {
+                backgroundColor: '#B31B1B',
+                color: 'white',
+                fontWeight: 'bold',
+                '&:hover': {
+                    cursor: 'pointer',
+                },
+            },
+        }
+    ];
+
     useEffect(() => {
         async function getAllCat() {
             let res = await axios.get(`https://accounts-manager-api.vercel.app/getAllCat`).catch(err => console.log(err));
@@ -55,6 +85,7 @@ export default function Report() {
         }
         getAllCat();
     }, [])
+    const actionsMemo = React.useMemo(() => <Export onExport={() => downloadCSV(tableData)} />, []);
     return (
         <div style={{ marginTop: '10px' }}>
             <Container fluid>
@@ -85,30 +116,30 @@ export default function Report() {
                         <BarChart
                             width={1000}
                             height={400}
-                            series={[
-                                { data: graphData, label: selectedMonth, id: 'pvId' },
-                            ]}
-                            xAxis={[{ data: xLabel, scaleType: 'band' }]}
+                            series={[{ data: graphData, label: 'debit' }, { data: crdData, label: 'credit' }]}
+                            xAxis={[{ scaleType: 'band', data: xLabel, scaleType: 'band' }]}
                         />
                     </Row>
                 }
                 {
                     showTable &&
                     <div>
-                        <br/>
+                        <br />
                         <h5>Showing data for {selectedReport}:</h5>
                         <h6>Plant Balance: {plantBalance}</h6>
                         <hr />
                         <Row>
                             <Col>
-                        <DataTable
-                            columns={tableColumns}
-                            data={tableData}
-                            pagination
-                        />
-                        </Col>
+                                <DataTable
+                                    columns={tableColumns}
+                                    data={tableData}
+                                    pagination
+                                    conditionalRowStyles={conditionalRowStyles}
+                                    actions={actionsMemo}
+                                />
+                            </Col>
                         </Row>
-                        </div>
+                    </div>
                 }
             </Container>
         </div>
@@ -117,20 +148,32 @@ export default function Report() {
         setSelectedCategory(evt)
         let res = await axios.get(`https://accounts-manager-api.vercel.app/getExpDetails/${evt}`)
         let expenseArr = res.data.records;
-        if(evt === "plant") {
+        if (evt === "plant") {
             setPlantBalance(res.data.plantBalance)
         }
         setAllExpense(expenseArr);
         let consolidatedObject = {};
+        let consolidatedCredit = {};
         for (let expObj of expenseArr) {
-            if (consolidatedObject[expObj['expenseDate']]) {
-                consolidatedObject[expObj['expenseDate']] += parseFloat(expObj['expenseAmount']);
+            if (expObj['expenseType'] === 'debit') {
+                if (consolidatedObject[expObj['expenseDate']]) {
+                    consolidatedObject[expObj['expenseDate']] += parseFloat(expObj['expenseAmount']);
+                }
+                else {
+                    consolidatedObject[expObj['expenseDate']] = parseFloat(expObj['expenseAmount']);
+                }
             }
             else {
-                consolidatedObject[expObj['expenseDate']] = parseFloat(expObj['expenseAmount']);
+                if (consolidatedCredit[expObj['expenseDate']]) {
+                    consolidatedCredit[expObj['expenseDate']] += parseFloat(expObj['expenseAmount']);
+                }
+                else {
+                    consolidatedCredit[expObj['expenseDate']] = parseFloat(expObj['expenseAmount']);
+                }
             }
         }
         setConsolidatedExpense(consolidatedObject);
+        setConsolidatedCredit(consolidatedCredit);
         let keys = Object.keys(consolidatedObject);
         let months = new Set();
         for (let key of keys) {
@@ -143,16 +186,21 @@ export default function Report() {
         setSelectedReport('View report for')
         setSelectedMonth(evt);
         let gData = [];
+        let crdData = [];
         let labelArr = [];
         let conKeys = Object.keys(consolidatedExpense);
-        conKeys.sort((a,b)=> new Date(a).getTime()-new Date(b).getTime());
+        conKeys.sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
         for (let key of conKeys) {
             if (key.includes(evt)) {
                 labelArr.push(key)
                 gData.push(consolidatedExpense[key]);
+                if (consolidatedCredit[key]) {
+                    crdData.push(consolidatedCredit[key])
+                }
             }
         }
         setGraphData([...gData])
+        setCrdData([...crdData])
         setXlabel([...labelArr])
         setShowTable(false)
         setShowGraph(true)
@@ -162,16 +210,57 @@ export default function Report() {
         setSelectedMonth('View graph for')
         setSelectedReport(evt);
         let tData = [];
-        for(let expObj of allExpense) {
-            if(expObj["expenseDate"].includes(evt)) {
+        for (let expObj of allExpense) {
+            if (expObj["expenseDate"].includes(evt)) {
                 expObj['expenseAmount'] = parseFloat(expObj['expenseAmount'])
                 tData.push(expObj);
             }
         }
-        tData.sort((a,b)=>new Date(b.expenseDate).getTime()-new Date(a.expenseDate).getTime())
+        tData.sort((a, b) => new Date(b.expenseDate).getTime() - new Date(a.expenseDate).getTime())
         setTableData([...tData]);
         setShowGraph(false)
-        setShowTable(true)   
+        setShowTable(true)
+    }
+
+    function downloadCSV(array) {
+        const link = document.createElement('a');
+        let csv = convertArrayOfObjectsToCSV(array);
+        if (csv == null) return;
+
+        const filename = 'data.csv';
+
+        if (!csv.match(/^data:text\/csv/i)) {
+            csv = `data:text/csv;charset=utf-8,${csv}`;
+        }
+
+        link.setAttribute('href', encodeURI(csv));
+        link.setAttribute('download', filename);
+        link.click();
+    }
+    function convertArrayOfObjectsToCSV(array) {
+        let result;
+
+        const columnDelimiter = ',';
+        const lineDelimiter = '\n';
+        const keys = Object.keys(tableData[0]);
+
+        result = '';
+        result += keys.join(columnDelimiter);
+        result += lineDelimiter;
+
+        array.forEach(item => {
+            let ctr = 0;
+            keys.forEach(key => {
+                if (ctr > 0) result += columnDelimiter;
+
+                result += item[key];
+
+                ctr++;
+            });
+            result += lineDelimiter;
+        });
+
+        return result;
     }
 
 }
