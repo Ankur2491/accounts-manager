@@ -25,7 +25,6 @@ export default function Report() {
     const [tableData, setTableData] = useState([]);
     const [allExpense, setAllExpense] = useState([]);
     const [plantBalance, setPlantBalance] = useState(null);
-    const Export = ({ onExport }) => <Button onClick={e => onExport(e.target.value)}>Export</Button>;
     const tableColumns = [
         {
             name: 'Date',
@@ -85,7 +84,6 @@ export default function Report() {
         }
         getAllCat();
     }, [])
-    const actionsMemo = React.useMemo(() => <Export onExport={() => downloadCSV(tableData)} />, []);
     return (
         <div style={{ marginTop: '10px' }}>
             <Container fluid>
@@ -129,13 +127,15 @@ export default function Report() {
                         <h6>Plant Balance: {plantBalance}</h6>
                         <hr />
                         <Row>
+                            <Col md={{span: 1, offset: 11}}>
+                            <Button onClick={() => downloadCSV(tableData)}>Export</Button>
+                            </Col>
                             <Col>
                                 <DataTable
                                     columns={tableColumns}
                                     data={tableData}
                                     pagination
                                     conditionalRowStyles={conditionalRowStyles}
-                                    actions={actionsMemo}
                                 />
                             </Col>
                         </Row>
@@ -262,5 +262,4 @@ export default function Report() {
 
         return result;
     }
-
 }
