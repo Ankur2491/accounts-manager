@@ -35,6 +35,7 @@ export default function Report() {
             name: 'Comments',
             selector: row => row.expenseName,
             sortable: true,
+            wrap: true
         },
         {
             name: 'Type',
