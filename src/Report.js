@@ -2,12 +2,14 @@ import * as React from 'react';
 import { BarChart } from '@mui/x-charts/BarChart';
 import { Container, Button } from 'react-bootstrap';
 import Row from 'react-bootstrap/Row';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Col from 'react-bootstrap/Col';
 import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownButton from 'react-bootstrap/DropdownButton';
 import axios from 'axios';
 import DataTable from 'react-data-table-component';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 
 export default function Report() {
     const [selectedCategory, setSelectedCategory] = useState('Select a category');
@@ -25,10 +27,12 @@ export default function Report() {
     const [tableData, setTableData] = useState([]);
     const [allExpense, setAllExpense] = useState([]);
     const [plantBalance, setPlantBalance] = useState(null);
-    const [selectedRows, setSelectedRows] = React.useState([]);
-    const [open, setOpen] = React.useState(false);
+    const [selectedRows, setSelectedRows] = useState([]);
+    const [open, setOpen] = useState(false);
     const [snackNote, setSnackNote] = useState(null);
-    const handleRowSelected = React.useCallback(state => {
+    const [toggleCleared, setToggleCleared] = React.useState(false);
+
+    const handleRowSelected = useCallback(state => {
         setSelectedRows(state.selectedRows);
     }, []);
     const tableColumns = [
@@ -123,7 +127,7 @@ export default function Report() {
                             width={1000}
                             height={400}
                             series={[{ data: graphData, label: 'debit' }, { data: crdData, label: 'credit' }]}
-                            xAxis={[{ scaleType: 'band', data: xLabel, scaleType: 'band' }]}
+                            xAxis={[{ scaleType: 'band', data: xLabel}]}
                         />
                     </Row>
                 }
@@ -136,7 +140,7 @@ export default function Report() {
                         <hr />
                         <Row>
                             {
-                                selectedRows.length>0 && selectedRows.length==1 ?
+                                selectedRows.length>0 && selectedRows.length===1 ?
                                 <Col>
                                 <Container fluid style={{backgroundColor:'lightblue'}}>
                                 <Row>
@@ -176,6 +180,7 @@ export default function Report() {
                                     onSelectedRowsChange={handleRowSelected}
                                     pagination
                                     conditionalRowStyles={conditionalRowStyles}
+                                    clearSelectedRows={toggleCleared}
                                 />
                             </Col>
                         </Row>
@@ -315,7 +320,7 @@ export default function Report() {
         return result;
     }
     async function deleteRecords() {
-        expTransArr = new Set();
+        let expTransArr = new Set();
         for(let row of selectedRows) {
             expTransArr.add(row.expTransId);
         }
@@ -323,6 +328,10 @@ export default function Report() {
             "items": Array.from(expTransArr)
         }
         let res = await axios.post("https://accounts-manager-api.vercel.app/deleteRecords", postBody).catch(err => console.log(err));
+        let tData = tableData.filter(td=>!expTransArr.has(td.expTransId))
+        setTableData([...tData]);
+        setToggleCleared(!toggleCleared);
+        setSelectedRows([]);
         setSnackNote(res);
         setOpen(true)
         setTimeout(() => setOpen(false), 3000);
