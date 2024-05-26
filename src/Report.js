@@ -332,6 +332,7 @@ export default function Report() {
         setTableData([...tData]);
         setToggleCleared(!toggleCleared);
         setSelectedRows([]);
+        setPlantBalance(res.plantBalance);
         setSnackNote(res.message);
         setOpen(true)
         setTimeout(() => setOpen(false), 3000);
