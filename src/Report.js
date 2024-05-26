@@ -30,8 +30,8 @@ export default function Report() {
     const [selectedRows, setSelectedRows] = useState([]);
     const [open, setOpen] = useState(false);
     const [snackNote, setSnackNote] = useState(null);
-    const [toggleCleared, setToggleCleared] = React.useState(false);
-
+    const [toggleCleared, setToggleCleared] = useState(false);
+    const [showPlantBalance, setShowPlantBalance] = useState(true);
     const handleRowSelected = useCallback(state => {
         setSelectedRows(state.selectedRows);
     }, []);
@@ -136,7 +136,9 @@ export default function Report() {
                     <div>
                         <br />
                         <h5>Showing data for {selectedReport}:</h5>
+                        { showPlantBalance &&
                         <h6>Plant Balance: {plantBalance}</h6>
+                        }   
                         <hr />
                         <Row>
                             {
@@ -327,9 +329,11 @@ export default function Report() {
         let postBody = {
             "items": Array.from(expTransArr)
         }
+        setShowPlantBalance(false);
         let res = await axios.post("https://accounts-manager-api.vercel.app/deleteRecords", postBody).catch(err => console.log(err));
         let tData = tableData.filter(td=>!expTransArr.has(td.expTransId))
         setTableData([...tData]);
+        setShowPlantBalance(true);
         setToggleCleared(!toggleCleared);
         setSelectedRows([]);
         setPlantBalance(res.plantBalance);
