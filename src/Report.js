@@ -25,6 +25,12 @@ export default function Report() {
     const [tableData, setTableData] = useState([]);
     const [allExpense, setAllExpense] = useState([]);
     const [plantBalance, setPlantBalance] = useState(null);
+    const [selectedRows, setSelectedRows] = React.useState([]);
+    const [open, setOpen] = React.useState(false);
+    const [snackNote, setSnackNote] = useState(null);
+    const handleRowSelected = React.useCallback(state => {
+        setSelectedRows(state.selectedRows);
+    }, []);
     const tableColumns = [
         {
             name: 'Date',
@@ -127,6 +133,36 @@ export default function Report() {
                         <h6>Plant Balance: {plantBalance}</h6>
                         <hr />
                         <Row>
+                            {
+                                selectedRows.length>0 && selectedRows.length==1 ?
+                                <Col>
+                                <Container fluid style={{backgroundColor:'lightblue'}}>
+                                <Row>
+                                    <Col md={2}>
+                                        <h5 style={{marginTop:'20px'}}> Selected {selectedRows.length} record: </h5>
+                                   </Col>
+                                   <Col md={3}>
+                                    <Button variant="danger" style={{marginTop:'10px'}} onClick={deleteRecords}>Delete</Button>
+                                   </Col>
+                                </Row>
+                                <hr/>
+                                </Container>
+                                </Col>:
+                                 selectedRows.length>0 && selectedRows.length>1 &&
+                                 <Col>
+                                 <Container fluid style={{backgroundColor:'lightblue'}}>
+                                 <Row>
+                                     <Col md={2}>
+                                         <h5 style={{marginTop:'20px'}}> Selected {selectedRows.length} records: </h5>
+                                    </Col>
+                                    <Col md={3}>
+                                     <Button variant="danger" style={{marginTop:'10px'}} onClick={deleteRecords}>Delete</Button>
+                                    </Col>
+                                 </Row>
+                                 <hr/>
+                                 </Container>
+                                 </Col>
+                            }
                             <Col md={{span: 1, offset: 11}}>
                             <Button onClick={() => downloadCSV(tableData)}>Export</Button>
                             </Col>
@@ -134,6 +170,8 @@ export default function Report() {
                                 <DataTable
                                     columns={tableColumns}
                                     data={tableData}
+                                    selectableRows
+                                    onSelectedRowsChange={handleRowSelected}
                                     pagination
                                     conditionalRowStyles={conditionalRowStyles}
                                 />
@@ -142,6 +180,18 @@ export default function Report() {
                     </div>
                 }
             </Container>
+            {open === true &&
+                <div>
+                    <Snackbar open={open} autoHideDuration={3000} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+                        <Alert
+                            severity="success"
+                            variant="filled"
+                            sx={{ width: '100%' }}>
+                            {snackNote}
+                        </Alert>
+                    </Snackbar>
+                </div>
+            }
         </div>
     )
     async function changeCategory(evt) {
@@ -261,5 +311,18 @@ export default function Report() {
         });
 
         return result;
+    }
+    async function deleteRecords() {
+        expTransArr = new Set();
+        for(let row of selectedRows) {
+            expTransArr.add(row.expTransId);
+        }
+        let postBody = {
+            "items": Array.from(expTransArr)
+        }
+        let res = await axios.post("https://accounts-manager-api.vercel.app/deleteRecords", postBody).catch(err => console.log(err));
+        setSnackNote(res);
+        setOpen(true)
+        setTimeout(() => setOpen(false), 3000);
     }
 }
