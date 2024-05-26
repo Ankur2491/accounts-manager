@@ -332,7 +332,7 @@ export default function Report() {
         setTableData([...tData]);
         setToggleCleared(!toggleCleared);
         setSelectedRows([]);
-        setSnackNote(res);
+        setSnackNote(res.message);
         setOpen(true)
         setTimeout(() => setOpen(false), 3000);
     }
