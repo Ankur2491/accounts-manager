@@ -36,11 +36,13 @@ export default function Report() {
             name: 'Date',
             selector: row => row.expenseDate,
             sortable: true,
+            wrap: true
         },
         {
             name: 'Comments',
             selector: row => row.expenseName,
             sortable: true,
+            wrap: true
         },
         {
             name: 'Type',
