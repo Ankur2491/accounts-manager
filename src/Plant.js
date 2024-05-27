@@ -58,7 +58,7 @@ function Plant() {
                     <Col>
                         <InputGroup className="mb-3">
                             <Form.Control
-                                placeholder="Enter comment here"
+                                placeholder="Enter description here"
                                 aria-label="expenseName" onChange={changeExpenseName} value={expenseName}
                             />
                         </InputGroup>
@@ -76,7 +76,7 @@ function Plant() {
                             </Row>
                         </Container>
                         <br />
-                        <Button variant="primary" size="sm" onClick={submitExpense}>Submit Expense</Button>
+                        <Button variant="primary" size="sm" onClick={submitExpense}>Submit</Button>
                     </Col>
 
                 </Row>

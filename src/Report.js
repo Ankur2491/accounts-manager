@@ -42,7 +42,7 @@ export default function Report() {
             wrap: true
         },
         {
-            name: 'Comments',
+            name: 'Description',
             selector: row => row.expenseName,
             sortable: true,
             wrap: true
@@ -230,7 +230,13 @@ export default function Report() {
         }
         setConsolidatedExpense(consolidatedObject);
         setConsolidatedCredit(consolidatedCredit);
-        let keys = Object.keys(consolidatedObject);
+        let keys;
+        if (Object.keys(consolidatedObject).length<1) {
+            keys = Object.keys(consolidatedCredit);
+        }
+        else {
+            keys = Object.keys(consolidatedObject);
+        }
         let months = new Set();
         for (let key of keys) {
             months.add(key.substring(key.indexOf('-') + 1));
@@ -299,9 +305,9 @@ export default function Report() {
         const columnDelimiter = ',';
         const lineDelimiter = '\n';
         const keys = Object.keys(tableData[0]);
-
+        let showKeys = ["Category", "Type", "Description", "Amount", "Date", "TransactionId", "Balance"]        
         result = '';
-        result += keys.join(columnDelimiter);
+        result += showKeys.join(columnDelimiter);
         result += lineDelimiter;
 
         array.forEach(item => {

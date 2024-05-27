@@ -8,7 +8,7 @@ function AppNavbar() {
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className="me-auto">
               <Nav.Link href="/plant">Plant</Nav.Link>
-              <Nav.Link href="/site">Site</Nav.Link>
+              {/* <Nav.Link href="/site">Site</Nav.Link> */}
               <Nav.Link href="/report">Report</Nav.Link>
             </Nav>
           </Navbar.Collapse>
