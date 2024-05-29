@@ -250,7 +250,13 @@ export default function Report() {
         let gData = [];
         let crdData = [];
         let labelArr = [];
-        let conKeys = Object.keys(consolidatedExpense);
+        let conKeys;
+        if (Object.keys(consolidatedCredit).length<1) {
+            conKeys = Object.keys(consolidatedExpense);
+        }
+        else {
+            conKeys = Object.keys(consolidatedCredit);
+        }
         conKeys.sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
         for (let key of conKeys) {
             if (key.includes(evt)) {
