@@ -107,13 +107,18 @@ function Plant() {
     async function submitExpense() {
         if (expenseName && expenseName.length > 0
             && expenseAmount && expenseAmount.length > 0) {
+            let isBackDateTrans = false
+            if(moment(expenseDate).format('DD-MMM-yyyy') < moment(new Date()).format('DD-MMM-yyyy')){
+                isBackDateTrans = true;
+            }
             let expenseBody = {
                 "expenseFor": "plant",
                 "expenseType": detailType,
                 "expenseName": expenseName,
                 "expenseAmount": expenseAmount,
                 "expenseDate": moment(expenseDate).format('DD-MMM-yyyy'),
-                "expTransId": expTransId
+                "expTransId": expTransId,
+                "isBackDateTrans": isBackDateTrans
             }
             await axios.post(`https://accounts-manager-api.vercel.app/addExpense`, expenseBody).catch(err => console.log(err));
             setOpen(true)

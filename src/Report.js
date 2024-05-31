@@ -2,7 +2,7 @@ import * as React from 'react';
 import { BarChart } from '@mui/x-charts/BarChart';
 import { Container, Button } from 'react-bootstrap';
 import Row from 'react-bootstrap/Row';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import Col from 'react-bootstrap/Col';
 import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownButton from 'react-bootstrap/DropdownButton';
@@ -31,9 +31,9 @@ export default function Report() {
     const [open, setOpen] = useState(false);
     const [snackNote, setSnackNote] = useState(null);
     const [toggleCleared, setToggleCleared] = useState(false);
-    const handleRowSelected = useCallback(state => {
-        setSelectedRows(state.selectedRows);
-    }, []);
+    // const handleRowSelected = useCallback(state => {
+    //     setSelectedRows(state.selectedRows);
+    // }, []);
     const tableColumns = [
         {
             name: 'Date',
@@ -69,10 +69,7 @@ export default function Report() {
             style: {
                 backgroundColor: '#1CAC78',
                 color: 'white',
-                fontWeight: 'bold',
-                '&:hover': {
-                    cursor: 'pointer',
-                },
+                fontWeight: 'bold'
             },
         },
         {
@@ -80,10 +77,7 @@ export default function Report() {
             style: {
                 backgroundColor: '#B31B1B',
                 color: 'white',
-                fontWeight: 'bold',
-                '&:hover': {
-                    cursor: 'pointer',
-                },
+                fontWeight: 'bold'
             },
         }
     ];
@@ -175,11 +169,8 @@ export default function Report() {
                                 <DataTable
                                     columns={tableColumns}
                                     data={tableData}
-                                    selectableRows
-                                    onSelectedRowsChange={handleRowSelected}
                                     pagination
                                     conditionalRowStyles={conditionalRowStyles}
-                                    clearSelectedRows={toggleCleared}
                                 />
                             </Col>
                         </Row>
