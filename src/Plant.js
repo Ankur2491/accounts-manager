@@ -78,7 +78,11 @@ function Plant() {
                         <br />
                         <Button variant="primary" size="sm" onClick={submitExpense}>Submit</Button>
                     </Col>
-
+                </Row>
+                <Row>
+                <Col>
+                <p><b>Note:</b><i>for incorrect transaction please submit the opposite transaction. For eg: for an incorrect credit, sumbit a debit transaction with the same amount.</i></p>
+                </Col>
                 </Row>
             </Container>
             {open === true &&
