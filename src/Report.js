@@ -119,7 +119,7 @@ export default function Report() {
                         <BarChart
                             width={1000}
                             height={400}
-                            series={[{ data: graphData, label: 'debit' }, { data: crdData, label: 'credit' }]}
+                            series={[{ data: graphData, label: 'debit', color:'#B31B1B' }, { data: crdData, label: 'credit', color:'#1CAC78' }]}
                             xAxis={[{ scaleType: 'band', data: xLabel}]}
                         />
                     </Row>
@@ -242,19 +242,31 @@ export default function Report() {
         let crdData = [];
         let labelArr = [];
         let conKeys;
-        if (Object.keys(consolidatedCredit).length<1) {
-            conKeys = Object.keys(consolidatedExpense);
-        }
-        else {
-            conKeys = Object.keys(consolidatedCredit);
-        }
+        conKeys = Object.keys(consolidatedExpense);
+        conKeys.join(Object.keys(consolidatedCredit));
+        // if (Object.keys(consolidatedCredit).length<1) {
+        //     conKeys = Object.keys(consolidatedExpense);
+        // }
+        // else {
+        //     conKeys = Object.keys(consolidatedCredit);
+        // }
         conKeys.sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
         for (let key of conKeys) {
             if (key.includes(evt)) {
                 labelArr.push(key)
                 gData.push(consolidatedExpense[key]);
-                if (consolidatedCredit[key]) {
+                if(consolidatedExpense[key] && consolidatedCredit[key]){
+                    gData.push(consolidatedExpense[key]);
                     crdData.push(consolidatedCredit[key])
+
+                }
+                else if (consolidatedCredit[key] && !consolidatedExpense[key]) {
+                    crdData.push(consolidatedCredit[key])
+                    gData.push(0);
+                }
+                else if(!consolidatedCredit[key] && consolidatedExpense[key]) {
+                    gData.push(consolidatedExpense[key]);
+                    crdData.push(0)
                 }
             }
         }
