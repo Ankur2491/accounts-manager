@@ -254,11 +254,9 @@ export default function Report() {
         for (let key of conKeys) {
             if (key.includes(evt)) {
                 labelArr.push(key)
-                gData.push(consolidatedExpense[key]);
                 if(consolidatedExpense[key] && consolidatedCredit[key]){
                     gData.push(consolidatedExpense[key]);
                     crdData.push(consolidatedCredit[key])
-
                 }
                 else if (consolidatedCredit[key] && !consolidatedExpense[key]) {
                     crdData.push(consolidatedCredit[key])
