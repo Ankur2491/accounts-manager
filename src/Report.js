@@ -82,6 +82,10 @@ export default function Report() {
         }
     ];
 
+    const paginationComponentOptions = {
+        selectAllRowsItem: true,
+        selectAllRowsItemText: 'All'
+    }
     useEffect(() => {
         async function getAllCat() {
             let res = await axios.get(`https://accounts-manager-api.vercel.app/getAllCat`).catch(err => console.log(err));
@@ -170,6 +174,7 @@ export default function Report() {
                                     columns={tableColumns}
                                     data={tableData}
                                     pagination
+                                    paginationComponentOptions={paginationComponentOptions}
                                     conditionalRowStyles={conditionalRowStyles}
                                 />
                             </Col>
@@ -292,8 +297,14 @@ export default function Report() {
     }
 
     function downloadCSV(array) {
+        let newArray = [];
+        for(let obj of array) {
+            delete obj['expTransId']
+            delete obj['isBackDateTrans']
+            newArray.push(obj);
+        }
         const link = document.createElement('a');
-        let csv = convertArrayOfObjectsToCSV(array);
+        let csv = convertArrayOfObjectsToCSV(newArray);
         if (csv == null) return;
 
         const filename = 'data.csv';
@@ -312,7 +323,7 @@ export default function Report() {
         const columnDelimiter = ',';
         const lineDelimiter = '\n';
         const keys = Object.keys(tableData[0]);
-        let showKeys = ["Category", "Type", "Description", "Amount", "Date", "TransactionId", "Balance"]        
+        let showKeys = ["Category", "Type", "Description", "Amount", "Date", "Balance"]        
         result = '';
         result += showKeys.join(columnDelimiter);
         result += lineDelimiter;
