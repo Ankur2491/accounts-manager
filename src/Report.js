@@ -33,7 +33,7 @@ export default function Report() {
     const [snackNote, setSnackNote] = useState(null);
     const [toggleCleared, setToggleCleared] = useState(false);
     const [hitWords, setHitWords] = useState([]);
-    const [selectedItems, setSelectedItems] = useState([]);
+    const [selectedItem, setSelectedItem] = useState(null);
     // const handleRowSelected = useCallback(state => {
     //     setSelectedRows(state.selectedRows);
     // }, []);
@@ -144,7 +144,7 @@ export default function Report() {
                                     <h6>Top Words: </h6>
                                     <Row>
                                         <Col md={12}>
-                                            {hitWords.map(hitWord => <Badge style={{ cursor: 'pointer', marginLeft: '5px' }} bg={selectedItems.includes(hitWord) ? "secondary" : "primary"} onClick={() => showHitWordData(hitWord)} key={hitWord}>{hitWord}</Badge>)}
+                                            {hitWords.map(hitWord => <Badge style={{ cursor: 'pointer', marginLeft: '5px' }} bg={selectedItem === hitWord ? "secondary" : "primary"} onClick={() => showHitWordData(hitWord)} key={hitWord}>{hitWord}</Badge>)}
                                         </Col>
                                     </Row>
                                     <hr />
@@ -382,21 +382,19 @@ export default function Report() {
         setTimeout(() => setOpen(false), 3000);
     }
     function showHitWordData(hitWord) {
-        let items = selectedItems;
-        if(selectedItems.includes(hitWord)) {
-            items = [...selectedItems.filter(item=>item!=hitWord)];
-            setSelectedItems([...selectedItems.filter(item=>item!=hitWord)]);
-        }
-        else {
-            items.push(hitWord);
-            setSelectedItems([...selectedItems, hitWord]);
-        }
-        reloadReport(items);
+       if(selectedItem === hitWord) {
+        setSelectedItem(null)
+        reloadReport('')
+       }
+       else {
+       setSelectedItem(hitWord)
+       reloadReport(hitWord);
+       }
     }
-    function reloadReport(items) {
+    function reloadReport(hitWord) {
         let tData = [];
         for (let expObj of allExpense) {
-            if (expObj["expenseDate"].includes(selectedReport) && expObj['expenseName'].includes(items)) {
+            if (expObj["expenseDate"].includes(selectedReport) && expObj['expenseName'].includes(hitWord)) {
                 expObj['expenseAmount'] = parseFloat(expObj['expenseAmount'])
                 tData.push(expObj);
             }
