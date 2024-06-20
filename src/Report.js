@@ -10,6 +10,7 @@ import axios from 'axios';
 import DataTable from 'react-data-table-component';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
+import Badge from 'react-bootstrap/Badge';
 
 export default function Report() {
     const [selectedCategory, setSelectedCategory] = useState('Select a category');
@@ -31,6 +32,8 @@ export default function Report() {
     const [open, setOpen] = useState(false);
     const [snackNote, setSnackNote] = useState(null);
     const [toggleCleared, setToggleCleared] = useState(false);
+    const [hitWords, setHitWords] = useState([]);
+    const [selectedItems, setSelectedItems] = useState([]);
     // const handleRowSelected = useCallback(state => {
     //     setSelectedRows(state.selectedRows);
     // }, []);
@@ -135,6 +138,18 @@ export default function Report() {
                         <h5>Showing data for {selectedReport}:</h5>
                         <h6>Plant Balance: {plantBalance}</h6>  
                         <hr />
+                            {
+                                hitWords && hitWords.length > 0 &&
+                                <div>
+                                    <h6>Top Words: </h6>
+                                    <Row>
+                                        <Col md={12}>
+                                            {hitWords.map(hitWord => <Badge style={{ cursor: 'pointer', marginLeft: '5px' }} bg={selectedItems.includes(hitWord) ? "secondary" : "primary"} onClick={() => showHitWordData(hitWord)} key={hitWord}>{hitWord}</Badge>)}
+                                        </Col>
+                                    </Row>
+                                    <hr />
+                                </div>
+                            }
                         <Row>
                             {
                                 selectedRows.length>0 && selectedRows.length===1 ?
@@ -280,16 +295,22 @@ export default function Report() {
         setShowGraph(true)
     }
 
-    function changeReport(evt) {
+    async function changeReport(evt) {
         setSelectedMonth('View graph for')
         setSelectedReport(evt);
         let tData = [];
+        let allDescription = [];
         for (let expObj of allExpense) {
             if (expObj["expenseDate"].includes(evt)) {
                 expObj['expenseAmount'] = parseFloat(expObj['expenseAmount'])
                 tData.push(expObj);
+                allDescription.push(expObj['expenseName']);
             }
         }
+        let res = await axios.post('https://accounts-manager-api.vercel.app/retrieveHitWords',{"allDescription": allDescription})
+        let freqMap = res.data;
+        let sortedEntries = Object.entries(freqMap).sort((a,b)=>b[1]-a[1]).map(el=>el[0]);
+        setHitWords(sortedEntries.slice(0,30));
         tData.sort((a, b) => b.expTransId-a.expTransId)
         setTableData([...tData]);
         setShowGraph(false)
@@ -359,5 +380,30 @@ export default function Report() {
         setSnackNote(res.data.message);
         setOpen(true)
         setTimeout(() => setOpen(false), 3000);
+    }
+    function showHitWordData(hitWord) {
+        let items = selectedItems;
+        if(selectedItems.includes(hitWord)) {
+            items = [...selectedItems.filter(item=>item!=hitWord)];
+            setSelectedItems([...selectedItems.filter(item=>item!=hitWord)]);
+        }
+        else {
+            items.push(hitWord);
+            setSelectedItems([...selectedItems, hitWord]);
+        }
+        reloadReport(items);
+    }
+    function reloadReport(items) {
+        let tData = [];
+        for (let expObj of allExpense) {
+            if (expObj["expenseDate"].includes(selectedReport) && expObj['expenseName'].includes(items)) {
+                expObj['expenseAmount'] = parseFloat(expObj['expenseAmount'])
+                tData.push(expObj);
+            }
+        }
+        tData.sort((a, b) => b.expTransId-a.expTransId)
+        setTableData([...tData]);
+        setShowGraph(false)
+        setShowTable(true)
     }
 }
